@@ -3,9 +3,10 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IERC721Mintable.sol";
 
-contract TokenTrader is Ownable {
+contract TokenTrader is Ownable, ReentrancyGuard {
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
@@ -45,7 +46,7 @@ contract TokenTrader is Ownable {
 
     // PUBLIC FUNCTIONS
 
-    function buy(uint256 amount) external payable {
+    function buy(uint256 amount) external payable nonReentrant {
         require(block.timestamp >= whitelistUntil, "Only whitelisted can buy now");
         _buy(amount);
     }
@@ -55,7 +56,7 @@ contract TokenTrader is Ownable {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external payable {
+    ) external payable nonReentrant {
         _validateSignature(v, r, s);
         _buy(amount);
     }
