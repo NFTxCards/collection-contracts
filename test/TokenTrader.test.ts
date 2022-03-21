@@ -80,15 +80,24 @@ describe("Test TokenTrader contract", function () {
     it("Can buy before timelock passes with whitelist signature", async function () {
         const sig = await signWhitelist(owner.address);
 
-        await trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
+        await trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
         expect(await nft.ownerOf(0)).to.equal(owner.address);
+    });
+
+    it("Can't buy twice with signature", async function () {
+        const sig = await signWhitelist(owner.address);
+
+        await trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
+        await expect(
+            trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
+        ).to.be.revertedWith("Already claimed whitelist");
     });
 
     it("Can't buy before timelock with wrong whitelist sig", async function () {
         const sig = await signWhitelist(other.address);
 
         await expect(
-            trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
+            trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
         ).to.be.revertedWith("Invalid signature");
     });
 

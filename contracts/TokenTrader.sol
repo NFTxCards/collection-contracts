@@ -24,6 +24,8 @@ contract TokenTrader is Ownable, ReentrancyGuard {
 
     uint256 public price;
 
+    mapping(address => bool) public didClaim;
+
     // EVENTS
 
     event TokenBought(address buyer, uint256 amount);
@@ -52,13 +54,16 @@ contract TokenTrader is Ownable, ReentrancyGuard {
     }
 
     function buyWhitelist(
-        uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) external payable nonReentrant {
         _validateSignature(v, r, s);
-        _buy(amount);
+
+        require(!didClaim[msg.sender], "Already claimed whitelist");
+        didClaim[msg.sender] = true;
+
+        _buy(1);
     }
 
     // RESTRICTED FUNCTIONS
