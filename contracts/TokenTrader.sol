@@ -12,7 +12,8 @@ contract TokenTrader is Ownable, ReentrancyGuard {
         keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
 
     /// @notice The EIP-712 typehash for the whitelist signature
-    bytes32 public constant WHITELIST_TYPEHASH = keccak256("Whitelist(address account)");
+    bytes32 public constant WHITELIST_TYPEHASH =
+        keccak256("Whitelist(address account,uint256 amount)");
 
     IERC721Mintable public immutable collection;
 
@@ -54,16 +55,17 @@ contract TokenTrader is Ownable, ReentrancyGuard {
     }
 
     function buyWhitelist(
+        uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) external payable nonReentrant {
-        _validateSignature(v, r, s);
+        _validateSignature(amount, v, r, s);
 
         require(!didClaim[msg.sender], "Already claimed whitelist");
         didClaim[msg.sender] = true;
 
-        _buy(1);
+        _buy(amount);
     }
 
     // RESTRICTED FUNCTIONS
@@ -79,12 +81,13 @@ contract TokenTrader is Ownable, ReentrancyGuard {
     // INTERNAL FUNCTIONS
 
     function _buy(uint256 amount) internal {
-        require(msg.value >= amount * price, "Value passed is too low");
+        require(msg.value == amount * price, "Value passed is too low");
         collection.mint(msg.sender, amount); // As ERC721A is used it will mint given amount of token
         emit TokenBought(msg.sender, amount);
     }
 
     function _validateSignature(
+        uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s
@@ -92,7 +95,7 @@ contract TokenTrader is Ownable, ReentrancyGuard {
         bytes32 domainSeparator = keccak256(
             abi.encode(DOMAIN_TYPEHASH, _getChainId(), address(this))
         );
-        bytes32 structHash = keccak256(abi.encode(WHITELIST_TYPEHASH, msg.sender));
+        bytes32 structHash = keccak256(abi.encode(WHITELIST_TYPEHASH, msg.sender, amount));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address realSigner = ECDSA.recover(digest, v, r, s);
 

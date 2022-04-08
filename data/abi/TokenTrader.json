@@ -110,6 +110,11 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint8",
         "name": "v",
         "type": "uint8"

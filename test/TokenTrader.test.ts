@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ERC721Preset, TokenTrader } from "../types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { increaseTime, signMessage } from "./utils";
-import { Contract } from "ethers";
+import { BigNumberish, Contract } from "ethers";
 
 const { parseUnits } = ethers.utils;
 const chainId = network.config.chainId!;
@@ -13,9 +13,12 @@ describe("Test TokenTrader contract", function () {
     let nft: ERC721Preset;
     let trader: TokenTrader;
 
-    async function signWhitelist(account: string) {
+    async function signWhitelist(account: string, amount: BigNumberish) {
         const TypesTrader = {
-            Whitelist: [{ name: "account", type: "address" }],
+            Whitelist: [
+                { name: "account", type: "address" },
+                { name: "amount", type: "uint256" },
+            ],
         };
         return await signMessage(
             signer,
@@ -24,7 +27,7 @@ describe("Test TokenTrader contract", function () {
                 verifyingContract: trader.address,
             },
             TypesTrader,
-            { account },
+            { account, amount },
         );
     }
 
@@ -78,26 +81,34 @@ describe("Test TokenTrader contract", function () {
     });
 
     it("Can buy before timelock passes with whitelist signature", async function () {
-        const sig = await signWhitelist(owner.address);
+        const sig = await signWhitelist(owner.address, 1);
 
-        await trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
+        await trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
         expect(await nft.ownerOf(0)).to.equal(owner.address);
     });
 
     it("Can't buy twice with signature", async function () {
-        const sig = await signWhitelist(owner.address);
+        const sig = await signWhitelist(owner.address, 1);
 
-        await trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
+        await trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") });
         await expect(
-            trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
+            trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
         ).to.be.revertedWith("Already claimed whitelist");
     });
 
-    it("Can't buy before timelock with wrong whitelist sig", async function () {
-        const sig = await signWhitelist(other.address);
+    it("Can't buy wrong amount with signature", async function () {
+        const sig = await signWhitelist(owner.address, 1);
 
         await expect(
-            trader.buyWhitelist(sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
+            trader.buyWhitelist(2, sig.v, sig.r, sig.s, { value: parseUnits("0.2") }),
+        ).to.be.revertedWith("Invalid signature");
+    });
+
+    it("Can't buy before timelock with wrong whitelist sig", async function () {
+        const sig = await signWhitelist(other.address, 1);
+
+        await expect(
+            trader.buyWhitelist(1, sig.v, sig.r, sig.s, { value: parseUnits("0.1") }),
         ).to.be.revertedWith("Invalid signature");
     });
 
