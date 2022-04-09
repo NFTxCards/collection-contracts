@@ -37,14 +37,12 @@ contract TokenTrader is Ownable, ReentrancyGuard {
         IERC721Mintable collection_,
         uint256 price_,
         uint256 whitelistDuration,
-        address signer_,
-        string memory sigListIpfsHash_
+        address signer_
     ) {
         collection = collection_;
         price = price_;
         whitelistUntil = block.timestamp + whitelistDuration;
         signer = signer_;
-        sigListIpfsHash = sigListIpfsHash_;
     }
 
     // PUBLIC FUNCTIONS
@@ -76,6 +74,10 @@ contract TokenTrader is Ownable, ReentrancyGuard {
 
     function withdraw() external onlyOwner {
         payable(msg.sender).transfer(payable(address(this)).balance);
+    }
+
+    function setSigListIpfsHash(string memory sigListIpfsHash_) external onlyOwner {
+        sigListIpfsHash = sigListIpfsHash_;
     }
 
     // INTERNAL FUNCTIONS

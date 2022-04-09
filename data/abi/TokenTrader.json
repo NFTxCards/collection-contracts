@@ -20,11 +20,6 @@
         "internalType": "address",
         "name": "signer_",
         "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "sigListIpfsHash_",
-        "type": "string"
       }
     ],
     "stateMutability": "nonpayable",
@@ -209,6 +204,19 @@
       }
     ],
     "name": "setPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "sigListIpfsHash_",
+        "type": "string"
+      }
+    ],
+    "name": "setSigListIpfsHash",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

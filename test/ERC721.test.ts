@@ -24,9 +24,10 @@ describe("Test ERC721Preset contract", function () {
         token = (await TokenFactory.deploy(
             "TestToken",
             "TT",
-            "base/",
-            owner.address,
+            "base/"
         )) as ERC721Preset;
+
+        await token.setMinter(owner.address)
     });
 
     it("Name and symbol are correct", async function () {

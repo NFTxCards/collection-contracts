@@ -38,8 +38,7 @@ describe("Test TokenTrader contract", function () {
         nft = (await ERC721PresetFactory.deploy(
             "NFT",
             "NFT",
-            "base/",
-            owner.address,
+            "base/"
         )) as ERC721Preset;
 
         const TokenTraderFactory = await ethers.getContractFactory("TokenTrader");
@@ -47,8 +46,7 @@ describe("Test TokenTrader contract", function () {
             nft.address,
             parseUnits("0.1"),
             3 * 24 * 60 * 60,
-            signer.address,
-            "hash",
+            signer.address
         )) as TokenTrader;
 
         await nft.setMinter(trader.address);

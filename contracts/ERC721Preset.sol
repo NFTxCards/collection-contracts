@@ -9,9 +9,8 @@ contract ERC721Preset is ERC721Permit, ERC721URI, ERC721Mintable {
     constructor(
         string memory name,
         string memory symbol,
-        string memory baseURI,
-        address minter
-    ) ERC721A(name, symbol, type(uint256).max) ERC721URI(baseURI) ERC721Mintable(minter) {}
+        string memory baseURI
+    ) ERC721A(name, symbol, type(uint256).max) ERC721URI(baseURI) {}
 
     function supportsInterface(bytes4 interfaceId)
         public
