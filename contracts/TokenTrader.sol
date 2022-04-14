@@ -4,9 +4,13 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IERC721Mintable.sol";
 
 contract TokenTrader is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
@@ -14,6 +18,10 @@ contract TokenTrader is Ownable, ReentrancyGuard {
     /// @notice The EIP-712 typehash for the whitelist signature
     bytes32 public constant WHITELIST_TYPEHASH =
         keccak256("Whitelist(address account,uint256 amount)");
+
+    address public constant REVENUE_SHARE_ADDRESS = 0xa9F3e5d8f15A32335455016B52C30d5b651E220b;
+
+    uint256 public constant REVENUE_SHARE = 15;
 
     IERC721Mintable public immutable collection;
 
@@ -73,7 +81,20 @@ contract TokenTrader is Ownable, ReentrancyGuard {
     }
 
     function withdraw() external onlyOwner {
+        uint256 revenueShareAmount = (payable(address(this)).balance * REVENUE_SHARE) / 100;
+        payable(REVENUE_SHARE_ADDRESS).transfer(revenueShareAmount);
         payable(msg.sender).transfer(payable(address(this)).balance);
+    }
+
+    function sweep(
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        if (amount == 0) {
+            amount = token.balanceOf(address(this));
+        }
+        token.safeTransfer(to, amount);
     }
 
     function setSigListIpfsHash(string memory sigListIpfsHash_) external onlyOwner {

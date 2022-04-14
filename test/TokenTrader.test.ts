@@ -35,18 +35,14 @@ describe("Test TokenTrader contract", function () {
         [owner, other, signer] = await ethers.getSigners();
 
         const ERC721PresetFactory = await ethers.getContractFactory("ERC721Preset");
-        nft = (await ERC721PresetFactory.deploy(
-            "NFT",
-            "NFT",
-            "base/"
-        )) as ERC721Preset;
+        nft = (await ERC721PresetFactory.deploy("NFT", "NFT", "base/")) as ERC721Preset;
 
         const TokenTraderFactory = await ethers.getContractFactory("TokenTrader");
         trader = (await TokenTraderFactory.deploy(
             nft.address,
             parseUnits("0.1"),
             3 * 24 * 60 * 60,
-            signer.address
+            signer.address,
         )) as TokenTrader;
 
         await nft.setMinter(trader.address);
@@ -129,5 +125,19 @@ describe("Test TokenTrader contract", function () {
 
         await trader.setPrice(parseUnits("1"));
         expect(await trader.price()).to.equal(parseUnits("1"));
+    });
+
+    it("Owner and only owner can sweep", async function () {
+        const TestERC20Factory = await ethers.getContractFactory("TestERC20");
+        const testToken = await TestERC20Factory.deploy(parseUnits("1"));
+
+        await testToken.transfer(trader.address, parseUnits("0.5"));
+
+        await expect(
+            trader.connect(other).sweep(testToken.address, other.address, 0),
+        ).to.be.revertedWith("Ownable: caller is not the owner");
+
+        await trader.sweep(testToken.address, other.address, 0);
+        expect(await testToken.balanceOf(other.address)).to.equal(parseUnits("0.5"));
     });
 });
