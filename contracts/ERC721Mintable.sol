@@ -7,8 +7,12 @@ import "./ERC721A.sol";
 abstract contract ERC721Mintable is ERC721A, Ownable {
     address public minter;
 
+    constructor(address minter_) {
+        minter = minter_;
+    }
+
     function mint(address to, uint256 quantity) external onlyMinter {
-        _safeMint(to, quantity);
+        _mint(to, quantity);
     }
 
     function setMinter(address minter_) external onlyOwner {
