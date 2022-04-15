@@ -332,6 +332,36 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
+     * @dev Mints one tokens to each of given in `to` addresses.
+     *
+     * Requirements:
+     *
+     * - Each address in `to` cannot be the zero address.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _multiMint(address[] memory to) internal {
+        uint256 updatedIndex = currentIndex;
+
+        for (uint256 i = 0; i < to.length; i++) {
+            _beforeTokenTransfers(address(0), to[i], updatedIndex, 1);
+
+            AddressData memory addressData = _addressData[to[i]];
+            _addressData[to[i]] = AddressData(
+                addressData.balance + 1,
+                addressData.numberMinted + 1
+            );
+            _ownerships[updatedIndex] = TokenOwnership(to[i], uint64(block.timestamp));
+            emit Transfer(address(0), to[i], updatedIndex);
+            updatedIndex++;
+
+            _afterTokenTransfers(address(0), to[i], updatedIndex, 1);
+        }
+
+        currentIndex = updatedIndex;
+    }
+
+    /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:

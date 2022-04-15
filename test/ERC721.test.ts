@@ -21,13 +21,7 @@ describe("Test ERC721Preset contract", function () {
         [owner, other] = await ethers.getSigners();
 
         const TokenFactory = await ethers.getContractFactory("ERC721Preset");
-        token = (await TokenFactory.deploy(
-            "TestToken",
-            "TT",
-            "base/"
-        )) as ERC721Preset;
-
-        await token.setMinter(owner.address)
+        token = (await TokenFactory.deploy("TestToken", "TT", "base/")) as ERC721Preset;
     });
 
     it("Name and symbol are correct", async function () {
@@ -39,6 +33,19 @@ describe("Test ERC721Preset contract", function () {
         await expect(token.connect(other).mint(other.address, 1)).to.be.revertedWith(
             "Caller is not minter",
         );
+    });
+
+    it("Minter and only minter can multi-mint", async function () {
+        await expect(token.connect(other).multiMint([other.address])).to.be.revertedWith(
+            "Caller is not minter",
+        );
+
+        await token.multiMint([owner.address, other.address]);
+        expect(await token.ownerOf(0)).to.equal(owner.address);
+        expect(await token.balanceOf(owner.address)).to.equal(1);
+        expect(await token.ownerOf(1)).to.equal(other.address);
+        expect(await token.balanceOf(other.address)).to.equal(1);
+        expect(await token.totalSupply()).to.equal(2);
     });
 
     it("Token URI is correct", async function () {

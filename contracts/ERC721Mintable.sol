@@ -15,6 +15,10 @@ abstract contract ERC721Mintable is ERC721A, Ownable {
         _mint(to, quantity);
     }
 
+    function multiMint(address[] memory to) external onlyMinter {
+        _multiMint(to);
+    }
+
     function setMinter(address minter_) external onlyOwner {
         minter = minter_;
     }
