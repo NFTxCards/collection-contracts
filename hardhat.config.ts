@@ -27,6 +27,7 @@ const config: HardhatUserConfig = {
     },
     networks: {
         goerli: ethereumConfig,
+        rinkeby: ethereumConfig,
         mainnet: ethereumConfig,
         bsc: {
             url: "https://bsc-dataseed.binance.org/",

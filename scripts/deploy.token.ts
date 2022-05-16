@@ -8,7 +8,7 @@ import { parseUnits } from "ethers/lib/utils";
 import { signMessage } from "../test/utils";
 
 const day = 24 * 60 * 60;
-const ipfsHash = "QmeBcHF1fERCifWmhUrH9Lgeg763VJRyVTP59nQjpFuKAW";
+const ipfsHash = "QmaR8tnh9avGRVyd6ZwAYRHUincMfBKssPAVJypmRCWnAb";
 
 const whitelist = [
   {
@@ -54,10 +54,14 @@ async function signWhitelist(account: string, verifyingContract: string, amount:
       { name: "amount", type: "uint256" },
     ],
   }
+
+  const network = await ethers.provider.getNetwork()
+  console.log('network', network)
+
   return await signMessage(
     sender,
     {
-      chainId: 5,
+      chainId: network.chainId,
       verifyingContract,
     },
     TypesTrader,
@@ -69,13 +73,13 @@ async function main() {
   const [sender] = await ethers.getSigners();
   console.log("Sender: ", sender.address);
 
-  console.log("start deploy token");
+  // console.log("start deploy token");
   // We get the contract to deploy
   const TokenImplementation = await ethers.getContractFactory("ERC721Preset");
   const tokenImpl = await TokenImplementation.deploy(
     "Mock", // name
     "MCKX", // symbol
-    `https://gateway.pinata.cloud/ipfs/${ipfsHash}`, // uri
+    `ipfs://${ipfsHash}/`, // uri
   );
   await tokenImpl.deployed();
   console.log("token deployed", tokenImpl.address);
@@ -123,6 +127,12 @@ async function main() {
   console.log("setSigListIpfsHash");
   const setSigListIpfsHashResult = await traderImpl.setSigListIpfsHash(resPinJSON.IpfsHash);
   await setSigListIpfsHashResult.wait();
+
+  // let TokenImplementation = await ethers.getContractAt("ERC721Preset", "0xa995FB61e7b2ab929fBc45b5c350B59471042952");
+  //
+  //
+  // TokenImplementation = TokenImplementation.connect(sender)
+  // await TokenImplementation.setBaseURI(`ipfs://${ipfsHash}/`)
 }
 
 main()
