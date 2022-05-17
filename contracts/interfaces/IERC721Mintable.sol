@@ -5,4 +5,5 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
 
 interface IERC721Mintable is IERC721Upgradeable {
     function mint(address to, uint256 tokenId) external;
+    function totalSupply() external view returns (uint256);
 }

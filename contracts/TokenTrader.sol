@@ -27,6 +27,8 @@ contract TokenTrader is Ownable, ReentrancyGuard {
 
     uint256 public immutable whitelistUntil;
 
+    uint256 public immutable maxPossibleSupply;
+
     address public immutable signer;
 
     string public sigListIpfsHash;
@@ -45,12 +47,14 @@ contract TokenTrader is Ownable, ReentrancyGuard {
         IERC721Mintable collection_,
         uint256 price_,
         uint256 whitelistDuration,
-        address signer_
+        address signer_,
+        uint256 maxPossibleSupply_
     ) {
         collection = collection_;
         price = price_;
         whitelistUntil = block.timestamp + whitelistDuration;
         signer = signer_;
+        maxPossibleSupply = maxPossibleSupply_;
     }
 
     // PUBLIC FUNCTIONS
@@ -105,6 +109,7 @@ contract TokenTrader is Ownable, ReentrancyGuard {
 
     function _buy(uint256 amount) internal {
         require(msg.value == amount * price, "Value passed is too low");
+        require(collection.totalSupply() + amount <= maxPossibleSupply, "Not enough tokens left");
         collection.mint(msg.sender, amount); // As ERC721A is used it will mint given amount of token
         emit TokenBought(msg.sender, amount);
     }

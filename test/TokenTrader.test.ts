@@ -1,6 +1,6 @@
 import { ethers, network } from "hardhat";
 import { expect } from "chai";
-import { ERC721Preset, TokenTrader } from "../types";
+import { MusesOfPleasure, TokenTrader } from "../types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { increaseTime, signMessage } from "./utils";
 import { BigNumberish, Contract } from "ethers";
@@ -10,7 +10,7 @@ const chainId = network.config.chainId!;
 
 describe("Test TokenTrader contract", function () {
     let owner: SignerWithAddress, other: SignerWithAddress, signer: SignerWithAddress;
-    let nft: ERC721Preset;
+    let nft: MusesOfPleasure;
     let trader: TokenTrader;
 
     async function signWhitelist(account: string, amount: BigNumberish) {
@@ -34,8 +34,8 @@ describe("Test TokenTrader contract", function () {
     this.beforeEach(async function () {
         [owner, other, signer] = await ethers.getSigners();
 
-        const ERC721PresetFactory = await ethers.getContractFactory("ERC721Preset");
-        nft = (await ERC721PresetFactory.deploy("NFT", "NFT", "base/")) as ERC721Preset;
+        const ERC721PresetFactory = await ethers.getContractFactory("MusesOfPleasure");
+        nft = (await ERC721PresetFactory.deploy("NFT", "NFT", "base/", 10000)) as MusesOfPleasure;
 
         const TokenTraderFactory = await ethers.getContractFactory("TokenTrader");
         trader = (await TokenTraderFactory.deploy(
@@ -43,6 +43,7 @@ describe("Test TokenTrader contract", function () {
             parseUnits("0.1"),
             3 * 24 * 60 * 60,
             signer.address,
+            5
         )) as TokenTrader;
 
         await nft.setMinter(trader.address);
@@ -72,6 +73,11 @@ describe("Test TokenTrader contract", function () {
         expect(await nft.ownerOf(0)).to.equal(owner.address);
         expect(await nft.ownerOf(1)).to.equal(owner.address);
         expect(await ethers.provider.getBalance(trader.address)).to.equal(parseUnits("0.2"));
+    });
+
+    it("Can't buy with not enough tokens left", async function () {
+        await increaseTime(3 * 24 * 60 * 60);
+        await expect(trader.buy(6, { value: parseUnits("0.6") })).to.be.revertedWith("Not enough tokens left");
     });
 
     it("Can buy before timelock passes with whitelist signature", async function () {

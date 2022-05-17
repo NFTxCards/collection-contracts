@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { ERC721Preset } from "../types";
+import { MusesOfPleasure } from "../types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Block } from "@ethersproject/abstract-provider";
 import {
@@ -13,15 +13,15 @@ import {
 import { increaseTime, signMessage } from "./utils";
 import { Signature } from "ethers";
 
-describe("Test ERC721Preset contract", function () {
+describe("Test MusesOfPleasure contract", function () {
     let owner: SignerWithAddress, other: SignerWithAddress;
-    let token: ERC721Preset;
+    let token: MusesOfPleasure;
 
     this.beforeEach(async function () {
         [owner, other] = await ethers.getSigners();
 
-        const TokenFactory = await ethers.getContractFactory("ERC721Preset");
-        token = (await TokenFactory.deploy("TestToken", "TT", "base/")) as ERC721Preset;
+        const TokenFactory = await ethers.getContractFactory("MusesOfPleasure");
+        token = (await TokenFactory.deploy("TestToken", "TT", "base/", 5)) as MusesOfPleasure;
     });
 
     it("Name and symbol are correct", async function () {
@@ -32,6 +32,12 @@ describe("Test ERC721Preset contract", function () {
     it("Only minter can mint", async function () {
         await expect(token.connect(other).mint(other.address, 1)).to.be.revertedWith(
             "Caller is not minter",
+        );
+    });
+
+    it("Quantity to mint too high", async function () {
+        await expect(token.mint(other.address, 6)).to.be.revertedWith(
+          "quantity to mint too high",
         );
     });
 

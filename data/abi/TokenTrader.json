@@ -20,6 +20,11 @@
         "internalType": "address",
         "name": "signer_",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxPossibleSupply_",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -183,6 +188,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxPossibleSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

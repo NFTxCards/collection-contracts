@@ -8,7 +8,7 @@ import { parseUnits } from "ethers/lib/utils";
 import { signMessage } from "../test/utils";
 
 const day = 24 * 60 * 60;
-const ipfsHash = "QmaR8tnh9avGRVyd6ZwAYRHUincMfBKssPAVJypmRCWnAb";
+const ipfsHash = "QmZWmt6U5E9wuCS3a1XziWQjZeFTFEPffXr4j1JEqjo8hB";
 
 const whitelist = [
   {
@@ -55,13 +55,12 @@ async function signWhitelist(account: string, verifyingContract: string, amount:
     ],
   }
 
-  const network = await ethers.provider.getNetwork()
-  console.log('network', network)
+  const chainId = 4 // goerli - 5, mainnet - 1, rinkeby - 4
 
   return await signMessage(
     sender,
     {
-      chainId: network.chainId,
+      chainId,
       verifyingContract,
     },
     TypesTrader,
@@ -75,14 +74,18 @@ async function main() {
 
   // console.log("start deploy token");
   // We get the contract to deploy
-  const TokenImplementation = await ethers.getContractFactory("ERC721Preset");
+  const TokenImplementation = await ethers.getContractFactory("MusesOfPleasure");
   const tokenImpl = await TokenImplementation.deploy(
-    "Mock", // name
-    "MCKX", // symbol
+    "Muses of Pleasure", // name
+    "MoP", // symbol
     `ipfs://${ipfsHash}/`, // uri
+    5, //  how much a minter can mint at a time.
   );
   await tokenImpl.deployed();
   console.log("token deployed", tokenImpl.address);
+
+  // const tokenImpl = await ethers.getContractAt("MusesOfPleasure", '0x7Cb32c0F409Ad6D821dA67b04E0C79F0B8453453');
+  // await tokenImpl.connect(sender).setBaseURI(`ipfs://QmeYYBJrF5GX4yLenqRhxUjAmkS3akLm5ATJVYp9hmrA58/`);
 
   const pinata = pinataSDK(
     "e570cac578ba3585a96e",
@@ -100,6 +103,7 @@ async function main() {
     // 3 * day, // whitelistDuration
     0,
     sender.address, // signer him generate the signs
+    10000, // max possible supply
   ]
 
   const traderImpl = await TraderImplementation.deploy(...traderParams);
@@ -127,12 +131,6 @@ async function main() {
   console.log("setSigListIpfsHash");
   const setSigListIpfsHashResult = await traderImpl.setSigListIpfsHash(resPinJSON.IpfsHash);
   await setSigListIpfsHashResult.wait();
-
-  // let TokenImplementation = await ethers.getContractAt("ERC721Preset", "0xa995FB61e7b2ab929fBc45b5c350B59471042952");
-  //
-  //
-  // TokenImplementation = TokenImplementation.connect(sender)
-  // await TokenImplementation.setBaseURI(`ipfs://${ipfsHash}/`)
 }
 
 main()

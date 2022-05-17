@@ -15,6 +15,11 @@
         "internalType": "string",
         "name": "baseURI",
         "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxBatchSize",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
