@@ -3,7 +3,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Contract } from "ethers";
 import { network, ethers } from "hardhat";
 import { signMessage } from ".";
-import { ERC721Preset } from "../../types";
+import { MusesOfPleasure } from "../../types";
 
 const chainId = network.config.chainId!;
 
@@ -50,7 +50,7 @@ export type ERC721Permit = {
 
 export async function signPermitERC721(
     signer: SignerWithAddress,
-    token: ERC721Preset,
+    token: MusesOfPleasure,
     permit: ERC721Permit,
 ) {
     const sig = await signMessage(signer, DomainERC721(token), TypesERC721, permit);
@@ -67,7 +67,7 @@ export type ERC721PermitAll = {
 
 export async function signPermitAllERC721(
     signer: SignerWithAddress,
-    token: ERC721Preset,
+    token: MusesOfPleasure,
     permit: ERC721PermitAll,
 ) {
     const sig = await signMessage(signer, DomainERC721(token), TypesAllERC721, permit);

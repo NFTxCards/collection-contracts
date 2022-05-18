@@ -49,7 +49,6 @@ describe("Test TokenTrader contract", function () {
             parseUnits("0.1"),
             3 * 24 * 60 * 60,
             signer.address,
-            5,
         )) as TokenTrader;
 
         await nft.setMinter(trader.address);
@@ -79,13 +78,6 @@ describe("Test TokenTrader contract", function () {
         expect(await nft.ownerOf(0)).to.equal(owner.address);
         expect(await nft.ownerOf(1)).to.equal(owner.address);
         expect(await ethers.provider.getBalance(trader.address)).to.equal(parseUnits("0.2"));
-    });
-
-    it("Can't buy with not enough tokens left", async function () {
-        await increaseTime(3 * 24 * 60 * 60);
-        await expect(trader.buy(6, { value: parseUnits("0.6") })).to.be.revertedWith(
-            "Not enough tokens left",
-        );
     });
 
     it("Can buy before timelock passes with whitelist signature", async function () {
