@@ -21,7 +21,7 @@ describe("Test MusesOfPleasure contract", function () {
         [owner, other] = await ethers.getSigners();
 
         const TokenFactory = await ethers.getContractFactory("MusesOfPleasure");
-        token = (await TokenFactory.deploy("TestToken", "TT", "base/", 5)) as MusesOfPleasure;
+        token = (await TokenFactory.deploy("TestToken", "TT", "base/", 25, 50)) as MusesOfPleasure;
     });
 
     it("Name and symbol are correct", async function () {
@@ -36,9 +36,7 @@ describe("Test MusesOfPleasure contract", function () {
     });
 
     it("Quantity to mint too high", async function () {
-        await expect(token.mint(other.address, 6)).to.be.revertedWith(
-          "quantity to mint too high",
-        );
+        await expect(token.mint(other.address, 26)).to.be.revertedWith("quantity to mint too high");
     });
 
     it("Minter and only minter can multi-mint", async function () {
@@ -52,6 +50,25 @@ describe("Test MusesOfPleasure contract", function () {
         expect(await token.ownerOf(1)).to.equal(other.address);
         expect(await token.balanceOf(other.address)).to.equal(1);
         expect(await token.totalSupply()).to.equal(2);
+    });
+
+    it("Can't mint beyond cap", async function () {
+        await token.multiMint([owner.address, other.address]);
+        expect(await token.totalSupply()).to.equal(2);
+
+        await token.mint(owner.address, 25);
+        expect(await token.totalSupply()).to.equal(27);
+
+        await expect(token.mint(owner.address, 25)).to.be.revertedWith(
+            "ERC721Capped: mint overflows cap",
+        );
+
+        await token.mint(other.address, 23);
+        expect(await token.totalSupply()).to.equal(50);
+
+        await expect(token.mint(owner.address, 1)).to.be.revertedWith(
+            "ERC721Capped: mint overflows cap",
+        );
     });
 
     it("Token URI is correct", async function () {

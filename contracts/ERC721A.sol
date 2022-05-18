@@ -340,7 +340,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      *
      * Emits a {Transfer} event.
      */
-    function _multiMint(address[] memory to) internal {
+    function _multiMint(address[] memory to) internal virtual {
         uint256 updatedIndex = currentIndex;
 
         for (uint256 i = 0; i < to.length; i++) {
